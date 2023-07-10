@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
+from random import randint
 
 from services.home_activities import *
 from services.notifications_activities import *
@@ -16,6 +17,7 @@ from services.show_activity import *
 
 #HoneyComb -------------
 from opentelemetry import trace
+from opentelemetry import metrics
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
@@ -37,10 +39,7 @@ processor = BatchSpanProcessor(OTLPSpanExporter())
 provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
 tracer = trace.get_tracer(__name__)
-
-
-
-
+meter = metrics.get_meter("HoneyComb-Testing-Meter")
 
 #CloudWatch Logs
 import watchtower
@@ -110,10 +109,31 @@ rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
 #    got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
 #For RollBar Testing one route ----
-@app.route('/rollbar/test')
-def rollbar_test():
-    rollbar.report_message('Hello World!', 'warning')
-    return "Hello World!"
+#@app.route('/rollbar/test')
+#def rollbar_test():
+#    rollbar.report_message('Hello World!', 'warning')
+#    return "Hello World!"
+
+roll_counter = meter.create_counter(
+    "roll_counter",
+    description="The number of rolls by roll value",
+)
+
+#For HoneyComb Testing------
+@app.route('/honeycomb/test')
+def honeycomb_test():
+  #found the current span 
+  #added two extra Attributes, version and roll.value
+  #added an custom span
+  current_span = trace.get_current_span()
+  current_span.set_attribute("version","2.2.2") #added Extra Attribute
+  with tracer.start_as_current_span("calculate") as rollspan:
+          res = str(randint(1, 6))
+          rollspan.set_attribute("roll.value", res)
+          # This adds 1 to the counter for the given roll value
+          roll_counter.add(1, {"roll.value": res})
+          return res
+#End of HoneyComb Testing------
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
