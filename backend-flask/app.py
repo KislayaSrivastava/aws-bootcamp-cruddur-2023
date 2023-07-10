@@ -106,8 +106,8 @@ rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
 #        # flask already sets up logging
 #        allow_logging_basic_config=False)
 
-#    # send exceptions from `app` to rollbar, using flask's signal system.
-#   got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
+#   # send exceptions from `app` to rollbar, using flask's signal system.
+#    got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
 #For RollBar Testing one route ----
 @app.route('/rollbar/test')
