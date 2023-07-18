@@ -3,6 +3,8 @@ from flask import request
 from flask_cors import CORS, cross_origin
 import os
 from random import randint
+import sys
+import logging
 
 from services.home_activities import *
 from services.notifications_activities import *
@@ -76,11 +78,10 @@ origins = [frontend, backend]
 cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
-  expose_headers="location,link",
-  allow_headers="content-type,if-modified-since",
+  headers=['Content-Type', 'Authorization'], 
+  expose_headers='Authorization',
   methods="OPTIONS,GET,HEAD,POST"
 )
-
 #for Error logging in CloudWatch Logs
 #@app.after_request
 #def after_request(response):
@@ -173,6 +174,11 @@ def data_create_message():
 @app.route("/api/activities/home", methods=['GET'])
 @xray_recorder.capture('My_API-Activities_SubSegment') #Xray Subsegment ---
 def data_home():
+  app.logger.debug('AUTH HEADER 1----')
+  app.logger.debug(
+    request.headers.get('Authorization')
+  )
+  app.logger.debug('AUTH HEADER 2----')
   data = HomeActivities.run()
   return data, 200
 
