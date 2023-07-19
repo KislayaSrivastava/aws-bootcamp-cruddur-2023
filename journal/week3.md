@@ -120,8 +120,8 @@ aws cognito-idp admin-set-user-password \
 ![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/74f610ca-2c1f-4fd7-9d27-e8abc8b16659)
 
 Post this I was able to successfully login to my application. 
+ 
 
-LOGIN SCREENSHOT TO BE PUT
 
 #### Implementing Custom Signup, Confirmation, and Recovery Page
 Next in the similar way, i implemented custom signup, confirmation and password recovery pages.
@@ -269,18 +269,60 @@ def data_home():
   access_token = extract_access_token(request.headers)
   try:
     claims = cognito_jwt_token.verify(access_token)
-    # authenicatied request
-    app.logger.debug("authenicated")
+    app.logger.debug("Authenticated")
     app.logger.debug(claims)
-    app.logger.debug(claims['username'])
-    data = HomeActivities.run(cognito_user_id=claims['username'])
   except TokenVerifyError as e:
-    # unauthenicatied request
+    _ = request.data
+    abort(make_response(jsonify(message=str(e)), 401))
     app.logger.debug(e)
-    app.logger.debug("unauthenicated")
-    data = HomeActivities.run()
+    app.logger.debug("UnAuthenticated")
+    
+  data = HomeActivities.run()
   return data, 200
 ```
+C) JWT is removed when the user logs out. This was done by making the modification to signOut method in ProfileInfo.js
+
+```
+const signOut = async () => {
+    try {
+        await Auth.signOut({ global: true });
+        window.location.href = "/"
+        localStorage.removeItem("access_token")
+    } catch (error) {
+        console.log('error signing out: ', error);
+    }
+  }
+```
+
+#### Updated frontend UI for the Windows Machines  
+
+I watched the video and as shown by Andrew i modified the following files 
+a) index.css
+b) joinSection.css
+c) app.css
+d) Search.css
+e) SigninPage.css
+f) SignupPage.css
+g) ActivityItem.css
+h) DesktopSidebar.css
+
+The colors set in background, foreground, field-border, field-border-focus, field-bg, background were successfully imported and the new look and feel of the application was shared. 
+
+Initial Home Screen
+
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/436224bd-91f0-4d3c-b408-7e89f60fddb5)
+
+Login Page of the Application
+
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/0de22c39-47b3-43b2-a4c7-7f94bbf86af8)
+
+Post Authentication Login
+
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/9631a386-d13f-47fe-80da-be820d4f6cf4)
+
+Logout From Application
+
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/52fa30d0-4178-492a-8349-ef5b73a89280)
 
 
-#### Watched Decenteralized Authentication
+
