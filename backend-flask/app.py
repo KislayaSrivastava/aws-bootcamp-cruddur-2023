@@ -17,6 +17,11 @@ from services.messages import *
 from services.create_message import *
 from services.show_activity import *
 
+
+#new Library Flask-AWSCognito
+#from flask_awscognito import AWSCognitoAuthentication
+from lib.cognito_token_verification import CognitoTokenVerification
+
 #HoneyComb -------------
 from opentelemetry import trace
 from opentelemetry import metrics
@@ -65,6 +70,11 @@ LOGGER.addHandler(cw_handler)
 
 app = Flask(__name__)
 
+#new Library Testing
+cognito_token_verification = CognitoTokenVerification(
+  
+)
+#new library Testing
 #XRAY ----
 XRayMiddleware(app,xray_recorder)
 #HoneyComb --------
@@ -173,13 +183,18 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 @xray_recorder.capture('My_API-Activities_SubSegment') #Xray Subsegment ---
+#@aws_auth.authentication_required   #New Code for Testing
 def data_home():
-  app.logger.debug('AUTH HEADER 1----')
-  app.logger.debug(
-    request.headers.get('Authorization')
-  )
-  app.logger.debug('AUTH HEADER 2----')
+  #For Testing Logging
+  #app.logger.debug('AUTH HEADER 1----')
+  #app.logger.debug(
+  #  request.headers.get('Authorization')
+  #)
+  #app.logger.debug('AUTH HEADER 2----')
   data = HomeActivities.run()
+  claims = aws_auth.claims   #Adding for new library testing
+  app.logger.debug('claims')
+  app.logger.debug(claims)   #for logging
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])
