@@ -325,4 +325,25 @@ Logout From Application
 ![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/52fa30d0-4178-492a-8349-ef5b73a89280)
 
 
+#### Reasons for using third-party library for JWT token verification?
 
+The approach using Boto takes a non-expired access token to verify it with minimal coding. The reason why we are not using this approach is that we need to hit the AWS API to verify. With JWT, we don’t need to use an external service to verify it. We could have used aws-jwt-verify.js library , but it only supports Node.js. There's a Python-based implementation available on the awslabs github repo.
+Another option is the python package
+
+Few other approaches we can take to verify JWT
+a) A middleware approach in Flask (must be written in the same language).
+b) Using ```aws-jwt-verify.js``` in a sidecar container:
+        This approach could be economical in the long term.
+        Disadvantage:
+            Extra resource is needed for this.
+            It might make it hard for us down the road.
+            Scaling issues.
+c) Using ```API Gateway``` where endpoints in the app are tied to a specific endpoint in API Gateway:
+  A custom authorizer can be attached in API Gateway using Lambda.
+   *Advantages* :
+      Easy implementation with fewer resources.
+  *Disadvantage*:
+       Cost associated with API Gateway.
+       Not the best solution for us
+
+I was not able to solve any of the homework due to time constraints. I will come back to them later post completing all the modules. 
