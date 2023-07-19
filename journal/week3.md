@@ -331,14 +331,15 @@ The approach using Boto takes a non-expired access token to verify it with minim
 Another option is the python package
 
 Few other approaches we can take to verify JWT
-a) A middleware approach in Flask (must be written in the same language).
-b) Using ```aws-jwt-verify.js``` in a sidecar container:
+
+1) A middleware approach in Flask (must be written in the same language).
+2) Using ```aws-jwt-verify.js``` in a sidecar container:
         This approach could be economical in the long term.
         Disadvantage:
             Extra resource is needed for this.
             It might make it hard for us down the road.
             Scaling issues.
-c) Using ```API Gateway``` where endpoints in the app are tied to a specific endpoint in API Gateway:
+3) Using ```API Gateway``` where endpoints in the app are tied to a specific endpoint in API Gateway:
   A custom authorizer can be attached in API Gateway using Lambda.
    *Advantages* :
       Easy implementation with fewer resources.
@@ -346,4 +347,5 @@ c) Using ```API Gateway``` where endpoints in the app are tied to a specific end
        Cost associated with API Gateway.
        Not the best solution for us
 
+#### HomeWork
 I was not able to solve any of the homework due to time constraints. I will come back to them later post completing all the modules. 
