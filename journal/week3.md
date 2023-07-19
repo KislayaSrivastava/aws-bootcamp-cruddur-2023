@@ -94,6 +94,7 @@ const onsubmit = async (event) => {
 
 4) Finally, to allow user sign-out, the ProfileInfo.js file was modified as follows:
 
+```
 import { Auth } from 'aws-amplify';
 // sign-out method modified
 const signOut = async () => {
@@ -104,8 +105,9 @@ const signOut = async () => {
      console.log('error signing out: ', error);
     }
 }
+```
 
-Then a account was created manually in the system but that led to Token authentication errors since it was manually created. The status of teh account was pending verification and it could not be changed via console. So post some analysis, the below command was shown by Andrew to set a password with admin rights to avoid verification. 
+Then a account was created manually in the AWS Cognito Service but that led to Token authentication errors since it was manually created. The status of the account was pending verification and it could not be changed via console. So post some analysis, the below command was shown by Andrew to set a password with admin rights to avoid verification. 
 
 ```
 aws cognito-idp admin-set-user-password \
@@ -229,7 +231,56 @@ Screenshot of my password reset email
 ![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/da425810-280f-463f-ac9e-a907dffd07bf)
 
 
-#### Watched Decenteralized Authentication
+#### Verify JWT
+This was needed to include JWT in the request to the backend server and then render a different homepage depending on whether the person was authenticated or not. 
+
+A) These are the changes made to HomeFeedPage.js file to make Homepage to include JWT as part of request header when it’s talking to backend server.
+```
+const loadData = async () => {
+    try {
+      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
+      const res = await fetch(backend_url, {
+        headers: {
+          # Add JWT to request Header
+          Authorization: `Bearer ${localStorage.getItem("access_token")}` 
+        },
+        method: "GET"
+      });
+```
+To verify that the token was received, ```Flask-AWSCognito``` was added to ```requirements.txt``` file. New folder _lib_ in the backend directory was created. Within the folder, python file called ```cognito_jwt_token.py``` was created.
+
+B) In the app.py file, a object of type *CognitoJwtToken* was imported and initialized and also made changes to ```data_home``` method:
+
+```
+# some code
+from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVerifyError
+from flask import abort, make_response
+# more code
+
+cognito_jwt_token = CognitoJwtToken(
+  user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
+  user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
+  region=os.getenv("AWS_DEFAULT_REGION")
+)
+# more code
+@app.route("/api/activities/home", methods=['GET'])
+@xray_recorder.capture('activities_home')
+def data_home():
+  access_token = extract_access_token(request.headers)
+  try:
+    claims = cognito_jwt_token.verify(access_token)
+    # authenicatied request
+    app.logger.debug("authenicated")
+    app.logger.debug(claims)
+    app.logger.debug(claims['username'])
+    data = HomeActivities.run(cognito_user_id=claims['username'])
+  except TokenVerifyError as e:
+    # unauthenicatied request
+    app.logger.debug(e)
+    app.logger.debug("unauthenicated")
+    data = HomeActivities.run()
+  return data, 200
+```
 
 
 #### Watched Decenteralized Authentication
