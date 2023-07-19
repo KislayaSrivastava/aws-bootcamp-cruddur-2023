@@ -71,8 +71,10 @@ LOGGER.addHandler(cw_handler)
 app = Flask(__name__)
 
 #new Library Testing
-cognito_token_verification = CognitoTokenVerification(
-  
+cognito_jwt_token = CognitoJwtToken(
+  user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"),
+  user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
+  region=os.getenv("AWS_DEFAULT_REGION")
 )
 #new library Testing
 #XRAY ----
@@ -191,10 +193,20 @@ def data_home():
   #  request.headers.get('Authorization')
   #)
   #app.logger.debug('AUTH HEADER 2----')
-  data = HomeActivities.run()
-  claims = aws_auth.claims   #Adding for new library testing
+  access_token = CognitoJwtToken.extract_access_token(request.headers)
+  try:
+    self.token_service.verify(access_token)
+    self.claims = self.token_service.claims
+    g.cognito_claims = self.claims
+  except TokenVerifyError as e:
+    _ = request.data
+    abort(make_response(jsonify(message=str(e)), 401))
+
   app.logger.debug('claims')
   app.logger.debug(claims)   #for logging
+  
+  data = HomeActivities.run()
+  claims = aws_auth.claims   #Adding for new library testing
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])
