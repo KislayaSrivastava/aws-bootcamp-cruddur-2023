@@ -17,7 +17,7 @@ To interact with aws-cognito from the frontend, we need to install aws-amplify. 
 ```$ npm i aws-amplify --save```
 Note: -- save option is used because we want this saved in package.json as a developer tool. After running the above command check package.json to see it included.
 
-App.js, HomeFeedPage.js,SigninPage.js, ProfileInfo.js were modified as below and then the application was restarted to ensure it was working correctly.'
+App.js, HomeFeedPage.js,SigninPage.js, ProfileInfo.js were modified as below and then the application was restarted to ensure it was working correctly.Also the environment variables were added to docker-compose.yml file. 
 
 1) To configure the aws-amplify, the following was added in the App.js file:
 
