@@ -1,0 +1,7 @@
+#! /usr/bin/bash
+
+#this will be needed when we need to remove the Database and create a new record
+echo "db-drop"
+
+NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<< "$CONNECTION_URL")
+psql $NO_DB_CONNECTION_URL -c "DROP DATABASE cruddur;"
