@@ -183,7 +183,7 @@ def data_create_message():
   return
 
 @app.route("/api/activities/home", methods=['GET'])
-@xray_recorder.capture('My_API-Activities_SubSegment') #Xray Subsegment ---
+#@xray_recorder.capture('My_API-Activities_SubSegment') #Xray Subsegment ---
 #@aws_auth.authentication_required   #New Code for Testing
 def data_home():
   #For Testing Logging
