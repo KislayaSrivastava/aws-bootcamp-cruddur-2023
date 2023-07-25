@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import request, make_response, abort
+from flask import request, make_response, abort, jsonify
 from flask_cors import CORS, cross_origin
 import os
 from random import randint
