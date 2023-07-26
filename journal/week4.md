@@ -138,8 +138,36 @@ Post this command execution, i logged into the RDS service on the console and ve
 
 a) Created a new folder ```lib``` under ```backend-flask``` and created a file ```db.py``` to help enable query the database.
 ```
+from psycopg_pool import ConnectionPool
+import os
 
+connection_url = os.getenv("CONNECTION_URL")
+pool = ConnectionPool(connection_url)
+
+def query_wrap_object(template):
+  sql = f"""
+  (SELECT COALESCE(row_to_json(object_row),'{{}}'::json) FROM (
+  {template}
+  ) object_row);
+  """
+  return sql
+
+def query_wrap_array(template):
+  sql = f"""
+  (SELECT COALESCE(array_to_json(array_agg(row_to_json(array_row))),'[]'::json) FROM (
+  {template}
+  ) array_row);
+  """
+  return sql
+
+connection_url = os.getenv("CONNECTION_URL")
+pool = ConnectionPool(connection_url)
 ```
+
+b) The environment variable ```CONNECTION_URL``` in docker compose was updated from ```CONNECTION_URL``` to ```PROD_CONNECTION_URL```
+c) Under ```services/home-activities.py``` the mock endpoint was replaced with an actual API call
+
+
    
 
    
