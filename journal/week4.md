@@ -80,7 +80,20 @@ Post this command execution, i logged into the RDS service on the console and ve
 
    c. Using the command ```gp env <ENVIRONMENT_VARIABLE>=<VALUE OF THE VARIABLE>``` the environment variables can be exported into Gitpod's environment variables.
    d. Connecting to the aws RDS via the terminal can done by ```psql $PROD_CONNECTION_URL```
-   e.   
+   Post using this command I was able to successfully connect to the PostgreSQL installed on the RDS Client. 
+
+### Bash scripting for Database Operations and SQL files
+
+  a. Created two new folders in ```backend-flask``` named ```bin``` and ```db```. In bin folder the batch scripts are stored to execute Create/Connect/Seed data commands on the database. 
+  b. Since we were first using localhost then moving to the production environment, then we added below conditional statement to the code 
+
+  ```
+   if [ "$1" = "prod" ]; then
+    CON_URL=$PROD_CONNECTION_URL
+   else
+    CON_URL=$CONNECTION_URL
+   fi 
+  ```
    
    
 
