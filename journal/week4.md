@@ -218,9 +218,101 @@ Now post setup of the database it was expected to write into ```user``` table wh
 Two Steps were taken:
 a) A new lambda function was created and post creating the following script was updated in its code. 
 ```
-  
+  import json
+import psycopg2
+import os
+
+def lambda_handler(event, context):
+    user = event['request']['userAttributes']
+
+    print('User Attributes')
+    print(user)
+    
+    user_display_name = user['name']
+    user_email        = user['email']
+    user_handle       = user['preferred_username']
+    user_cognito_id   = user['sub']
+
+    try:
+        conn = psycopg2.connect(os.getenv('CONNECTION_URL'))
+        cur = conn.cursor()
+        
+        sql = f"""
+            INSERT INTO users (
+                display_name,
+                email,
+                handle,
+                cognito_user_id
+                )
+            values (
+                '{user_display_name}',
+                '{user_email}',
+                '{user_handle}',
+                '{user_cognito_id}')
+        """
+        print('Connection URL---')
+        print(conn)
+        print('SQL Statement ----')
+        print(sql)
+        
+        cur.execute(sql)
+        conn.commit() 
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        
+    finally:
+        if conn is not None:
+            cur.close()
+            conn.close()
+            print('Database connection closed.')
+
+    return event
 ```
 
-   
+b) Next since psycopg2 is not avaiable as a AWS Supported layer so i used a third party pre-compiled layer for this. Since my default region is ```ap-south-1``` so i had to choose a layer compatible with that region. The version of python supported was ```3.7``` so i made my lambda function on python 3.7 and added the layer for ```ap-south-1``` from this link <https://github.com/jetbridge/psycopg2-lambda-layer> 
 
-   
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/4dcf2119-be5d-404c-83f8-087b3f5f2435)
+
+Now the environment variable were also added in the configuration setup of the Lambda function
+
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/26aaa2b2-8fa2-47cd-9c5b-3c3d2bdf899b)
+
+c) The next part was to integrate this function into the same VPC which housed our Cognito and other functions.
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/b5e41b53-a641-4bee-a9d2-539ff947fce1)
+
+Once all of this was done, I tried saving the changesbut got this error message at the bottom of the page.
+
+```
+The provided execution role does not have permissions to call CreateNetworkInterface on EC2
+```
+Googling let me to this page <https://stackoverflow.com/questions/41177965/the-provided-execution-role-does-not-have-permissions-to-call-describenetworkint> and i used the AWS CLI option mentioned to modify the security group id and add the AWS managed policy (AWSLambdaVPCAccessExecutionRole) to the service role.
+
+  1) Ask Lambda API for function configuration, query the role from that, output to text for an unquoted return.
+```
+    aws lambda get-function-configuration \
+        --function-name <<your function name or ARN here>> \
+        --query Role \
+        --output text
+```
+  From this output take the service name and then use that in the below attach-policy command.
+
+  2. Attach Managed Policy AWSLambdaVPCAccessExecutionRole to Service Role
+```
+aws iam attach-role-policy \
+    --role-name your-service-role-name \
+    --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+```
+d) Now this lamdba function was added as a ````Post Confirmation``` lambda trigger under the ```user pool properties``` of the user Pool.
+
+e) Post all of this one record was successfully inserted into the database table.
+
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/04cb8343-43ef-495a-ab14-9d05da3b468b)
+
+Cognito User Pool Update   
+
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/be717165-fafc-4ebb-b195-81989d229c4e)
+
+### Creating New Activities with a Database Insert
+
+
