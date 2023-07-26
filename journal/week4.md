@@ -166,7 +166,60 @@ pool = ConnectionPool(connection_url)
 
 b) The environment variable ```CONNECTION_URL``` in docker compose was updated from ```CONNECTION_URL``` to ```PROD_CONNECTION_URL```
 c) Under ```services/home-activities.py``` the mock endpoint was replaced with an actual API call
+```
+from datetime import datetime, timedelta, timezone
+from opentelemetry import trace
+from lib.db import pool,query_wrap_array
 
+tracer = trace.get_tracer("home.activities")
+
+class HomeActivities:
+  def run(cognito_user_id=None):
+    print("HOME ACTIVITY")
+    #logger.info("HomeActivities")
+    with tracer.start_as_current_span("Home-Activities_MockData"):
+      span = trace.get_current_span()
+      now = datetime.now(timezone.utc).astimezone()
+      span.set_attribute("app.now", now.isoformat())
+
+      sql = query_wrap_array("""
+      SELECT 
+      activities.uuid,
+        users.display_name,
+        users.handle,
+        activities.message,
+        activities.replies_count,
+        activities.reposts_count,
+        activities.likes_count,
+        activities.reply_to_activity_uuid,
+        activities.expires_at,
+        activities.created_at
+      FROM public.activities
+      LEFT JOIN public.users ON users.uuid = activities.user_uuid
+      ORDER BY activities.created_at DESC
+      """)
+      print(sql)
+      with pool.connection() as conn:
+        with conn.cursor() as cur:
+          cur.execute(sql)
+          # this will return a tuple
+          # the first field being the data
+          json = cur.fetchone()
+      print(json[0])
+      return json[0]
+```
+d) Post this when the job was triggered, I was able to successfully see the records.
+![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/0a97ff48-d706-48c1-90ef-1d93c2ec887d)
+
+### Setup Cognito post confirmation lambda
+
+Now post setup of the database it was expected to write into ```user``` table when a new user signed up from the application. 
+
+Two Steps were taken:
+a) A new lambda function was created and post creating the following script was updated in its code. 
+```
+  
+```
 
    
 
