@@ -66,12 +66,22 @@ Post this command execution, i logged into the RDS service on the console and ve
 
 ### Setting up Postgres Drivers on backend-flask 
 
-1) 2 folders were created in backend-flask ie bin and db. The bin folder contained the different database bash scripts to connect/disconnect/load schema and load the data. The db folder had the sql files for the schema loading and seeding the actual records.  
+   a. In addition two python modules needed to run postgres were added to the requirements.txt file and then compiled.
 
-   ![image](https://github.com/KislayaSrivastava/aws-bootcamp-cruddur-2023/assets/40534292/a79af0cc-922a-4bdf-aa74-b5efeaccacae)
+   ```
+   psycopg[binary]
+   psycopg[pool]
+   ```
 
-   In addition two python modules were added to the requirements.txt file and then compiled.
+   b. I also created 2 environment variables to store connection URLs *CONNECTION_URL* for localhost and *PROD_CONNECTION_URL* for production RDS instance
 
+   ```export CONNECTION_URL="postgresql://postgres:password@localhost:5432/cruddur"```
+   ```export PROD_CONNECTION_URL="postgresql://cruddurroot:<MYPASSWORD>@cruddur-db-instance.<myUniqueID>.ap-south-1.rds.amazonaws.com:5432/cruddur"  ```
+
+   c. Using the command ```gp env <ENVIRONMENT_VARIABLE>=<VALUE OF THE VARIABLE>``` the environment variables can be exported into Gitpod's environment variables.
+   d. Connecting to the aws RDS via the terminal can done by ```psql $PROD_CONNECTION_URL```
+   e.   
+   
    
 
    
